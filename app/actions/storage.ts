@@ -4,7 +4,8 @@ import { supabaseAdmin } from "@/lib/supabase/admin";
 import { cookies } from "next/headers";
 
 async function getUserIdFromCookie() {
-  const access = cookies().get("sb_access_token")?.value;
+  const c = await cookies();
+  const access = c.get("sb_access_token")?.value;
   if (!access) throw new Error("Not authenticated.");
 
   const { data, error } = await supabaseAdmin.auth.getUser(access);
@@ -22,10 +23,7 @@ export async function uploadProfilePhotoAction(file: File) {
 
   const { error } = await supabaseAdmin.storage
     .from("profile-photos")
-    .upload(path, file, {
-      contentType: file.type || "image/jpeg",
-      upsert: false,
-    });
+    .upload(path, file, { contentType: file.type || "image/jpeg", upsert: false });
 
   if (error) throw new Error(error.message);
   return path;

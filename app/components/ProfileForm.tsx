@@ -10,43 +10,49 @@ type Profile = {
 };
 
 export default function ProfileForm({ initial }: { initial: Profile | null }) {
-  const [msg, setMsg] = useState<string>("");
+  const [msg, setMsg] = useState<{ type: "ok" | "err"; text: string } | null>(null);
 
   return (
     <form
       action={async (fd) => {
-        setMsg("");
+        setMsg(null);
         try {
           await upsertMyProfileAction(fd);
-          setMsg("✅ Data tersimpan!");
+          setMsg({ type: "ok", text: "✅ Data tersimpan!" });
         } catch (e: any) {
-          setMsg(`❌ ${e?.message || "Gagal simpan"}`);
+          setMsg({ type: "err", text: `❌ ${e?.message || "Gagal simpan"}` });
         }
       }}
-      style={{ display: "grid", gap: 12, maxWidth: 520 }}
+      className="grid"
+      style={{ maxWidth: 560 }}
     >
-      <input
-        name="full_name"
-        placeholder="Nama"
-        defaultValue={initial?.full_name ?? ""}
-        required
-      />
-      <textarea
-        name="address"
-        placeholder="Alamat"
-        defaultValue={initial?.address ?? ""}
-        rows={3}
-        required
-      />
-      <input
-        name="ktp_number"
-        placeholder="No KTP"
-        defaultValue={initial?.ktp_number ?? ""}
-        required
-      />
-      <input name="photo" type="file" accept="image/*" />
-      <button type="submit">Simpan / Update</button>
-      {msg ? <p>{msg}</p> : null}
+      <div className="grid" style={{ gap: 10 }}>
+        <label className="p" style={{ fontSize: 13 }}>Nama</label>
+        <input className="input" name="full_name" defaultValue={initial?.full_name ?? ""} required />
+      </div>
+
+      <div className="grid" style={{ gap: 10 }}>
+        <label className="p" style={{ fontSize: 13 }}>Alamat</label>
+        <textarea className="textarea" name="address" defaultValue={initial?.address ?? ""} required />
+      </div>
+
+      <div className="grid" style={{ gap: 10 }}>
+        <label className="p" style={{ fontSize: 13 }}>No KTP</label>
+        <input className="input" name="ktp_number" defaultValue={initial?.ktp_number ?? ""} required />
+      </div>
+
+      <div className="grid" style={{ gap: 10 }}>
+        <label className="p" style={{ fontSize: 13 }}>Upload Foto</label>
+        <input className="file" name="photo" type="file" accept="image/*" />
+      </div>
+
+      <button className="btn btnPrimary" type="submit">Simpan / Update</button>
+
+      {msg ? (
+        <p className={msg.type === "ok" ? "msgOk" : "msgErr"} style={{ margin: 0 }}>
+          {msg.text}
+        </p>
+      ) : null}
     </form>
   );
 }

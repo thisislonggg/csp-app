@@ -5,7 +5,8 @@ import { cookies } from "next/headers";
 import { uploadProfilePhotoAction } from "./storage";
 
 async function getUserIdFromCookie() {
-  const access = cookies().get("sb_access_token")?.value;
+  const c = await cookies();
+  const access = c.get("sb_access_token")?.value;
   if (!access) throw new Error("Not authenticated.");
 
   const { data, error } = await supabaseAdmin.auth.getUser(access);
@@ -47,7 +48,6 @@ export async function upsertMyProfileAction(formData: FormData) {
     ktp_number,
     updated_at: new Date().toISOString(),
   };
-
   if (photo_path) payload.photo_path = photo_path;
 
   const { error } = await supabaseAdmin.from("profiles").upsert(payload);

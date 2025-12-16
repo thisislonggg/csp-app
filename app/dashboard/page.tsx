@@ -1,40 +1,46 @@
 import AuthButton from "@/app/components/AuthButton";
 import ProfileForm from "@/app/components/ProfileForm";
 import { getMyProfileAction } from "@/app/actions/profile";
-import { supabaseClient } from "@/lib/supabase/client";
+import Link from "next/link";
 
 export default async function DashboardPage() {
-  const profile = await getMyProfileAction();
+  let profile = null;
 
-  // URL foto (kalau bucket private, pakai signed URL di server — versi simpel ini public URL)
-  // Kalau bucket kamu private, bilang ya—nanti aku ubah jadi signed URL via server action.
-  const photoUrl =
-    profile?.photo_path
-      ? supabaseClient.storage.from("profile-photos").getPublicUrl(profile.photo_path).data.publicUrl
-      : null;
+  try {
+    profile = await getMyProfileAction();
+  } catch {
+    return (
+      <main className="card">
+        <h2 className="h2">Belum Login</h2>
+        <p className="p">
+          Kamu harus login terlebih dahulu untuk mengakses dashboard.
+        </p>
+        <Link className="btn btnPrimary" href="/login">
+          Login
+        </Link>
+      </main>
+    );
+  }
 
   return (
-    <main style={{ maxWidth: 720 }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        <h2>Dashboard</h2>
+    <main className="split">
+      <section className="card">
+        <h2 className="h2">Dashboard</h2>
         <AuthButton />
-      </div>
+        <ProfileForm
+          initial={{
+            full_name: profile?.full_name ?? "",
+            address: profile?.address ?? "",
+            ktp_number: profile?.ktp_number ?? "",
+          }}
+        />
+      </section>
 
-      {photoUrl ? (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img src={photoUrl} alt="Profile" style={{ width: 160, height: 160, objectFit: "cover", borderRadius: 12 }} />
-      ) : (
-        <p>Belum ada foto.</p>
-      )}
-
-      <h3>Data Profil</h3>
-      <ProfileForm
-        initial={{
-          full_name: profile?.full_name ?? "",
-          address: profile?.address ?? "",
-          ktp_number: profile?.ktp_number ?? "",
-        }}
-      />
+      <aside className="card">
+        <h3 className="h2">Status Akun</h3>
+        <p className="p">✅ Login aktif</p>
+        <p className="p">🔐 Data hanya bisa diakses oleh akun ini</p>
+      </aside>
     </main>
   );
 }
